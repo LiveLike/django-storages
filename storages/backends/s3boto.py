@@ -3,7 +3,8 @@ import posixpath
 import mimetypes
 from datetime import datetime
 from gzip import GzipFile
-from tempfile import SpooledTemporaryFile
+#from tempfile import SpooledTemporaryFile
+from io import BytesIO
 
 from django.core.files.base import File
 from django.core.exceptions import ImproperlyConfigured, SuspiciousOperation
@@ -109,11 +110,13 @@ class S3BotoStorageFile(File):
 
     def _get_file(self):
         if self._file is None:
-            self._file = SpooledTemporaryFile(
-                max_size=self._storage.max_memory_size,
-                suffix=".S3BotoStorageFile",
-                dir=setting("FILE_UPLOAD_TEMP_DIR", None)
-            )
+            #self._file = SpooledTemporaryFile(
+            #    max_size=self._storage.max_memory_size,
+            #    suffix=".S3BotoStorageFile",
+            #    dir=setting("FILE_UPLOAD_TEMP_DIR", None)
+            #)
+            # required for appengine since we cant write temp files
+            self._file = BytesIO()
             if 'r' in self._mode:
                 self._is_dirty = False
                 self.key.get_contents_to_file(self._file)
